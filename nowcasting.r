@@ -30,7 +30,8 @@ names(data) <- c("Datum", "NeuErkr", "ug_NeuErkr", "og_NeuErkr", "NeuErkr_gl", "
 R_Wert <- rep(NA, nrow(data)) 
 for (t in 8:nrow(data)) { 
   R_Wert[t] <- sum(data$NeuErkr[t-0:3]) / sum(data$NeuErkr[t-4:7])
-} 
+}
+#Runden des Werts
 data <- data %>% dplyr::mutate(R_Wert = round(R_Wert, digits = 2))
 
 # Vgl R-Werten in der Excel-Tabelle 
@@ -46,3 +47,13 @@ ggplot(data=data, aes(x=Datum)) +
                  scales::date_format("%d.%m.")) + 
   scale_y_continuous(labels = function(x) format(x, big.mark = ",", decimal.mark = ".", scientific = FALSE)) + 
   theme(axis.text.x = element_text(angle=90, vjust=0))
+
+#Berechnung des 7 Tage R
+R7_Wert <- rep(NA, nrow(data)) 
+for (t in 11:nrow(data)) { 
+  R7_Wert[t-1] <- sum(data$NeuErkr[t-0:6]) / sum(data$NeuErkr[t-4:10]) 
+}
+data <- data %>% dplyr::mutate(R7_Wert = round(R7_Wert, digits = 2)) 
+
+# Vergleiche mit R-Werten in Excel Tabelle 
+data %>% select(Datum, R_7Tage, R7_Wert) %>% tail()
