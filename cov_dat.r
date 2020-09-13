@@ -24,4 +24,14 @@ retval <- subset( data, Bundesland == "Sachsen" & Landkreis == "SK Dresden")
 print(retval)
 
 
+#####################
+#                   #
+# Als geojson-Datei #
+#                   #
+#####################
 
+library(geojsonR)
+file_js = FROM_GeoJson(url_file_string = "https://opendata.arcgis.com/datasets/dd4580c810204019a7b8eb3e0b329dd6_0.geojson")
+
+library(geojsonio)
+file= geojson_read("https://opendata.arcgis.com/datasets/dd4580c810204019a7b8eb3e0b329dd6_0.geojson")
