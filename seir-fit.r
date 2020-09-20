@@ -21,9 +21,9 @@ data_r <- as.matrix(
     floor(c(rep(0, 28), head(data_ir * 0.2, -28)))
 )
 data_i <- data_ir - data_r
-data_ir <- data_ir[(202 - 60):(202 - 30)]
-data_r <- data_r[(202 - 60):(202 - 30)]
-data_i <- data_i[(202 - 60):(202 - 30)]
+data_ir <- data_ir[30:130]
+data_r <- data_r[30:130]
+data_i <- data_i[30:130]
 data_x_axis <- 0:(length(data_i) - 1)
 N <- 83200000
 
@@ -53,11 +53,27 @@ fitting <- mle2(
   control = list(maxit = 1e6),
   start = list(
     logS0 = log(N - data_ir[1] - data_i[1] - data_r[1]),
-    logE0 = log(data_ir[1]),
-    logI0 = log(data_i[1]),
-    logR0 = log(data_r[1]),
+    logE0 = log(max(1, data_ir[1])),
+    logI0 = log(max(1, data_i[1])),
+    logR0 = log(max(1, data_r[1])),
     lbeta = qlogis(0.2),
     lgamma = qlogis(0.2)
+  ),
+  lower = list(
+    logS0 = 0,
+    logE0 = 0,
+    logI0 = 0,
+    logR0 = 0,
+    lbeta = qlogis(0),
+    lgamma = qlogis(0)
+  ),
+  upper = list(
+    logS0 = log(N),
+    logE0 = log(N),
+    logI0 = log(N),
+    logR0 = log(N),
+    lbeta = qlogis(1),
+    lgamma = qlogis(0)
   ),
   minuslogl = function(logS0, logE0, logI0, logR0, lbeta, lgamma) {
     out <- seirgen(exp(logS0), exp(logE0), exp(logI0), exp(logR0), plogis(lbeta), plogis(lgamma))
