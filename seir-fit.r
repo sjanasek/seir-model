@@ -2,7 +2,7 @@ library(deSolve)
 library(bbmle)
 
 data_path <- paste0("data_", Sys.Date(), ".csv")
-data <- read.csv(file = data_path)
+data <- read.csv(file = data_path, stringsAsFactors = FALSE)
 
 # If any of the "Neu" columns are <0 they indicate revisioned (now invalid) entries.
 # "mask" them away so that they won't trouble us when we aggregate() the data below.
