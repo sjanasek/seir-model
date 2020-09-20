@@ -5,7 +5,22 @@ if (!file.exists(data_path)) {
 }
 
 data <- read.csv(file = data_path)
-filtered <- subset(data, Refdatum >= "2020/03/02 00:00:00" & NeuerFall >= 0)
-aggregated <- aggregate(AnzahlFall ~ Refdatum, filtered, sum)
+data$AnzahlFall[data$NeuerFall < 0] <- as.integer(0)
+data$AnzahlTodesfall[data$NeuerTodesfall < 0] <- as.integer(0)
+data$AnzahlGenesen[data$NeuGenesen < 0] <- as.integer(0)
+
+filtered <- subset(data, Refdatum >= "2020/03/02 00:00:00")
+aggregated <- aggregate(cbind(AnzahlFall, AnzahlTodesfall, AnzahlGenesen) ~ Meldedatum, filtered, sum)
 aggregated$AnzahlFall <- cumsum(aggregated$AnzahlFall)
+aggregated$AnzahlTodesfall <- cumsum(aggregated$AnzahlTodesfall)
+aggregated$AnzahlGenesen <- cumsum(aggregated$AnzahlGenesen)
+aggregated$AnzahlRecovered <- aggregated$AnzahlTodesfall + aggregated$AnzahlGenesen
+
+recovered <- as.matrix(
+  ceiling(c(rep(0, 14), head(aggregated$AnzahlFall * 0.8, -14))) +
+    floor(c(rep(0, 28), head(aggregated$AnzahlFall * 0.2, -28)))
+)
+
 plot(seq_len(nrow(aggregated)), aggregated$AnzahlFall)
+lines(seq_len(nrow(aggregated)), recovered, col = "orange")
+lines(seq_len(nrow(aggregated)), aggregated$AnzahlRecovered, col = "red")
