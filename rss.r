@@ -3,7 +3,7 @@ library(deSolve)
 load.data=function(file,from,to)
 {
 dat=read.csv(file)
-W=data.frame(substr(dat$Meldedatum,1,10),dat$AnzahlFall,stringsAsFactors = F)
+W=data.frame(substr(dat$Refdatum,1,10),dat$AnzahlFall,stringsAsFactors = F)
 names(W)=c("datum","faelle")
 B=aggregate(W$faelle,by=list(datum=W$datum),FUN=sum)
 names(B)=c("datum","I")
@@ -48,8 +48,9 @@ A <- load.data("data_2020-09-20.csv", "2020-03-02", "2020-05-02")
 recovered <-
   ceiling(c(rep(0, 14), head(A$acc * 0.8, -14))) +
     floor(c(rep(0, 28), head(A$acc * 0.2, -28)))
-
 A$acc <- A$acc - recovered
+
+A <- A[1:22,]
 
 #--------------------------------
 # Anfangswerte

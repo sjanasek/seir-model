@@ -1,4 +1,4 @@
-data_path <- paste0("data_", Sys.Date(), ".csv")
+data_path <- "data.csv"
 if (!file.exists(data_path)) {
   file_url <- "https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data"
   download.file(url = file_url, destfile = data_path, mode = "wb")
