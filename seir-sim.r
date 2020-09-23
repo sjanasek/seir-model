@@ -38,9 +38,9 @@ phases <- c(
 )
 betas <- c(
   0.7938187,
-  0.1799415,
-  0.2682169,
-  0.4788917
+  0.7938187,
+  0.7938187,
+  0.7938187
 )
 
 allphases <- seq.Date(phases[1], phases[length(phases)], 1)
