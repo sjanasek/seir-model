@@ -11,6 +11,9 @@ if (!file.exists(data_path)) {
 # In the following we're generating the "geilsten Daten Deutschlands". :)
 data <- read.csv(file = data_path, stringsAsFactors = FALSE)
 
+# Only observe Hamburg as rate of infection is fairly stable
+data <- data[data$IdBundesland == 2,]
+
 # If any of the "Neu" columns are <0 they indicate revisioned (now invalid) entries.
 # "mask" them away so that they won't trouble us when we aggregate() the data below.
 data$AnzahlFall[data$NeuerFall < 0] <- as.integer(0)
@@ -93,7 +96,7 @@ S0 <- N - E0 - I0 - R0
 gamma <- 0.33
 sigma <- 0.19
 
-plot(allphases$date, allphases$I, xlab = "date", ylim = c(0, 1e5), type = "b", cex = 0.5)
+plot(allphases$date, allphases$I, xlab = "date", ylab = "infected", ylim = c(0, 1.5*max(allphases$I)), type = "b", cex = 0.5)
 
 for (i in seq_len(nrow(phases))) {
   phase <- phases[i,]
