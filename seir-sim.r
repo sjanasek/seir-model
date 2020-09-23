@@ -27,24 +27,26 @@ colors <- brewer.pal(9, name = "Set1")
 types <- c("S", "E", "I", "R")
 phases <- c(
   as.Date("2020-03-02"),
-  as.Date("2020-03-24"),
+  # no lockdown
+  as.Date("2020-03-31"),
+  # lockdown
   as.Date("2020-05-07"),
-  as.Date("2020-06-16"),
-  as.Date("2020-06-29"),
-  as.Date("2020-08-31")
+  # no lockdown
+  as.Date("2020-07-20"),
+  # summer vacation
+  as.Date("2020-08-28")
 )
 betas <- c(
-  0.6,
-  0.2,
-  0.6,
-  0.2,
-  0.6
+  0.7938187,
+  0.1799415,
+  0.2682169,
+  0.4788917
 )
 
 allphases <- seq.Date(phases[1], phases[length(phases)], 1)
-N <- 83000000
+N <- 4000000
 R0 <- 0
-I0 <- 292
+I0 <- 14
 E0 <- 20 * I0
 S0 <- N - E0 - I0 - R0
 gamma <- 0.33

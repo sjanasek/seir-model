@@ -12,7 +12,7 @@ if (!file.exists(data_path)) {
 data <- read.csv(file = data_path, stringsAsFactors = FALSE)
 
 # Only observe Hamburg as rate of infection is fairly stable
-data <- data[data$IdBundesland == 2,]
+data <- data[data$IdBundesland == 14,]
 
 # If any of the "Neu" columns are <0 they indicate revisioned (now invalid) entries.
 # "mask" them away so that they won't trouble us when we aggregate() the data below.
@@ -83,19 +83,17 @@ colors <- brewer.pal(9, name = "Set1")
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
-  as.Date("2020-03-24"),
+  as.Date("2020-03-31"),
   # lockdown
   as.Date("2020-05-07"),
   # no lockdown
-  as.Date("2020-06-16"),
-  # FLEISCHSKANDAL
-  as.Date("2020-06-29"),
-  # MALLE
-  as.Date("2020-08-31")
+  as.Date("2020-07-20"),
+  # summer vacation
+  as.Date("2020-08-28")
 )
 
 allphases <- aggregated[aggregated$date >= phases[1] & aggregated$date <= phases[length(phases)],]
-N <- 2000000
+N <- 4000000
 R0 <- 0
 I0 <- allphases[1, "I"]
 E0 <- 20 * I0
