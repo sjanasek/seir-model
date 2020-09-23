@@ -1,5 +1,6 @@
 library(deSolve)
 library(dplyr)
+library(RColorBrewer)
 
 data_path <- "data.csv"
 if (!file.exists(data_path)) {
@@ -37,16 +38,7 @@ aggregated$R <-
 # "Isum" column to finally calculate the _currently_ actively infected individuals.
 aggregated$I <- aggregated$Isum - aggregated$R
 
-input <- aggregated[aggregated$date >= as.Date("2020-03-02") & aggregated$date <= as.Date("2020-03-23"),]
-N <- 83000000
-R0 <- 0
-I0 <- input[1, "I"]
-E0 <- 20 * I0
-S0 <- N - E0 - I0 - R0
-gamma <- 0.33
-sigma <- 0.19
-
-seirgen <- function(beta) {
+seirgen <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
   out <- ode(
     times = seq_len(nrow(input)),
     y = c(S = S0, E = E0, I = I0, R = R0),
@@ -68,20 +60,53 @@ seirgen <- function(beta) {
   out
 }
 
-optimized <- optim(
-  method = "L-BFGS-B",
-  control = list(parscale = 0.001, factr = 1),
-  y = input$I,
-  par = 0.5,
-  lower = 0,
-  upper = 1,
-  fn = function(beta, y) {
-    out <- seirgen(beta)
-    sum((y - out[, "I"])^2)
-  }
+seiroptim <- function(input, S0, E0, I0, R0, gamma, sigma) {
+  optimized <- optim(
+    method = "L-BFGS-B",
+    control = list(parscale = 0.001, factr = 1),
+    y = input$I,
+    par = 0.5,
+    lower = 0,
+    upper = 1,
+    fn = function(beta, y) {
+      out <- seirgen(input, S0, E0, I0, R0, beta, gamma, sigma)
+      sum((y - out[, "I"])^2)
+    }
+  )
+  optimized$par
+}
+
+colors <- brewer.pal(9, name = "Set1")
+phases <- data.frame(
+#        no lockdown            lockdown               no lockdown            FLEISCHSKANDAL         MALLE
+from = c(as.Date("2020-03-02"), as.Date("2020-03-24"), as.Date("2020-05-07"), as.Date("2020-06-16"), as.Date("2020-06-29")),
+to = c(as.Date("2020-03-23"), as.Date("2020-05-06"), as.Date("2020-06-15"), as.Date("2020-06-28"), as.Date("2020-08-31")),
+color = colors[1:5]
 )
 
-out <- seirgen(optimized$par)
+allphases <- aggregated[aggregated$date >= phases[1, "from"] & aggregated$date <= phases[nrow(phases), "to"],]
+N <- 83000000
+R0 <- 0
+I0 <- allphases[1, "I"]
+E0 <- 20 * I0
+S0 <- N - E0 - I0 - R0
+gamma <- 0.33
+sigma <- 0.19
 
-plot(input$date, input$I, xlab = "date")
-lines(out$date, out$I)
+plot(allphases$date, allphases$I, xlab = "date", ylim = c(0, 1e5), type = "b", cex = 0.5)
+
+for (i in seq_len(nrow(phases))) {
+  phase <- phases[i,]
+  input <- aggregated[aggregated$date >= phase$from & aggregated$date <= phase$to,]
+  beta <- seiroptim(input, S0, E0, I0, R0, gamma, sigma)
+  simulated <- seirgen(input, S0, E0, I0, R0, beta, gamma, sigma)
+
+  lines(simulated$date, simulated$I, col = phase$color)
+
+  # Starting parameters for the next iteration equal the final values for the current simulated run,
+  # since the next simulated phase should pick up where the current one left off.
+  R0 <- simulated[nrow(simulated), "R"]
+  I0 <- simulated[nrow(simulated), "I"]
+  E0 <- simulated[nrow(simulated), "E"]
+  S0 <- N - E0 - I0 - R0
+}
