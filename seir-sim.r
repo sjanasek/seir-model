@@ -1,7 +1,7 @@
 library(deSolve)
 library(RColorBrewer)
 
-seirgen <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
+seirsim <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out <- ode(
     times = seq_len(length(date)),
     y = c(S = S0, E = E0, I = I0, R = R0),
@@ -20,6 +20,16 @@ seirgen <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   colnames(out)[1] <- "date"
   out <- as.data.frame(out)
   out$date <- date
+  out
+}
+
+# same as seirsim, but rounds its output values to integers, since non-integer individuals don't exist.
+seirsimvisual <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
+  out <- seirsim(date, S0, E0, I0, R0, beta, gamma, sigma)
+  out$S <- round(out$S)
+  out$E <- round(out$E)
+  out$I <- round(out$I)
+  out$R <- round(out$R)
   out
 }
 
@@ -59,7 +69,7 @@ for (i in 1:(length(phases) - 1)) {
   beta <- betas[i]
 
   date <- seq.Date(from, to, 1)
-  simulated <- seirgen(date, S0, E0, I0, R0, beta, gamma, sigma)
+  simulated <- seirsimvisual(date, S0, E0, I0, R0, beta, gamma, sigma)
 
   simulateds[[i]] <- simulated
 

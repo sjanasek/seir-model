@@ -41,7 +41,7 @@ aggregated$R <-
 # "Isum" column to finally calculate the _currently_ actively infected individuals.
 aggregated$I <- aggregated$Isum - aggregated$R
 
-seirgen <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
+seirsim <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
   out <- ode(
     times = seq_len(nrow(input)),
     y = c(S = S0, E = E0, I = I0, R = R0),
@@ -63,6 +63,16 @@ seirgen <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
   out
 }
 
+# same as seirsim, but rounds its output values to integers, since non-integer individuals don't exist.
+seirsimvisual <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
+  out <- seirsim(input, S0, E0, I0, R0, beta, gamma, sigma)
+  out$S <- round(out$S)
+  out$E <- round(out$E)
+  out$I <- round(out$I)
+  out$R <- round(out$R)
+  out
+}
+
 seiroptim <- function(input, S0, E0, I0, R0, gamma, sigma) {
   optimized <- optim(
     method = "L-BFGS-B",
@@ -72,7 +82,7 @@ seiroptim <- function(input, S0, E0, I0, R0, gamma, sigma) {
     lower = 0,
     upper = 1,
     fn = function(beta, y) {
-      out <- seirgen(input, S0, E0, I0, R0, beta, gamma, sigma)
+      out <- seirsim(input, S0, E0, I0, R0, beta, gamma, sigma)
       sum((y - out[, "I"])^2)
     }
   )
@@ -110,7 +120,7 @@ for (i in 1:(length(phases) - 1)) {
 
   input <- aggregated[aggregated$date >= from & aggregated$date <= to,]
   beta <- seiroptim(input, S0, E0, I0, R0, gamma, sigma)
-  simulated <- seirgen(input, S0, E0, I0, R0, beta, gamma, sigma)
+  simulated <- seirsimvisual(input, S0, E0, I0, R0, beta, gamma, sigma)
 
   simulateds[[i]] <- simulated
   betas[[i]] <- beta
