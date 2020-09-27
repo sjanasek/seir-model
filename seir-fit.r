@@ -26,7 +26,7 @@ colnames(aggregated) <- c("date", "Idaily")
 aggregated$date <- as.Date(aggregated$date, "%Y/%m/%d")
 
 # The dataset is sparse and has missing dates. -> Insert missing dates and fill them with zero values.
-dates <- seq.Date(from = aggregated[1, "date"], to = aggregated[nrow(aggregated), "date"], by = 1)
+dates <- seq.Date(aggregated[1, "date"],  aggregated[nrow(aggregated), "date"], 1)
 aggregated <- full_join(data.frame(date = dates), aggregated)
 aggregated[is.na(aggregated)] <- as.integer(0)
 
