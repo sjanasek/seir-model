@@ -6,7 +6,7 @@ seirsim <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
     times = seq_len(length(date)),
     y = c(S = S0, E = E0, I = I0, R = R0),
     parms = c(N = N, beta = beta, gamma = gamma, sigma = sigma, dtstep = 1),
-    method = "euler",
+    #method = "euler",
     func = function(t, y, parms) {
       with(as.list(c(y, parms)), {
         dS <- dtstep * (-beta * ((S * I) / N))
@@ -38,23 +38,26 @@ types <- c("S", "E", "I", "R")
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
-  as.Date("2020-03-31"),
+  as.Date("2020-04-30"),
   # lockdown
-  as.Date("2020-05-07"),
+  as.Date("2020-06-30"),
   # no lockdown
-  as.Date("2020-07-20"),
+  as.Date("2020-08-30"),
   # summer vacation
-  as.Date("2020-08-28")
+  as.Date("2020-10-30"),
+  as.Date("2020-12-30")
+  
 )
 betas <- c(
-  0.7938187,
-  0.7938187,
-  0.7938187,
-  0.7938187
+  0.756664,
+  0.1775356,
+  0.476604,
+  0.1775356,
+  0.756664
 )
 
 allphases <- seq.Date(phases[1], phases[length(phases)], 1)
-N <- 4000000
+N <- 4078000
 R0 <- 0
 I0 <- 14
 E0 <- 20 * I0
@@ -95,7 +98,7 @@ for (type in types) {
 
 plot(allphases, rep(0, length(allphases)), main = "all", xlab = "date", ylab = type, ylim = c(0, N), type = "n", cex = 0.5)
 
-for (t in 1:4) {
+for (t in 1:6) {
   type <- types[t]
   for (i in seq_len(length(simulateds))) {
     simulated <- simulateds[[i]]
