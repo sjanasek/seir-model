@@ -46,6 +46,6 @@ seirgen <- function(dtstep) {
 out1 <- seirgen(1)
 out24 <- seirgen(1 / 24)
 
-plot(out1[, "time"], out1[, "I"], type = "l", xlab = "Tage", ylab = "I")
+plot(out1[, "time"], out1[, "I"], type = "l", xlab = "Zeit", ylab = "I")
 lines(out24[, "time"], out24[, "I"], col = "red")
 legend("topright", c("1d", "1h"), fill = c("black", "red"), title = "Zeitschrittlänge", horiz = TRUE)

@@ -1,12 +1,10 @@
 library(deSolve)
-library(RColorBrewer)
 
 seirsim <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out <- ode(
     times = seq_len(length(date)),
     y = c(S = S0, E = E0, I = I0, R = R0),
     parms = c(N = N, beta = beta, gamma = gamma, sigma = sigma, dtstep = 1),
-    #method = "euler",
     func = function(t, y, parms) {
       with(as.list(c(y, parms)), {
         dS <- dtstep * (-beta * ((S * I) / N))
@@ -33,8 +31,8 @@ seirsimvisual <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out
 }
 
-colors <- brewer.pal(9, name = "Set1")
 types <- c("S", "E", "I", "R")
+typeNames <- c(S = "Susceptible", E = "Exposed", I = "Infectious", R = "Recovered")
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
@@ -46,7 +44,6 @@ phases <- c(
   # summer vacation
   as.Date("2020-10-30"),
   as.Date("2020-12-30")
-  
 )
 betas <- c(
   0.756664,
@@ -56,7 +53,7 @@ betas <- c(
   0.756664
 )
 
-allphases <- seq.Date(phases[1], phases[length(phases)], 1)
+alldates <- seq.Date(phases[1], phases[length(phases)], 1)
 N <- 4078000
 R0 <- 0
 I0 <- 14
@@ -72,6 +69,7 @@ for (i in 1:(length(phases) - 1)) {
   beta <- betas[i]
 
   date <- seq.Date(from, to, 1)
+  print(data.frame(i = i, S0 = S0, E0 = E0, I0 = I0, R0 = R0, beta = beta, gamma = gamma, sigma = sigma))
   simulated <- seirsimvisual(date, S0, E0, I0, R0, beta, gamma, sigma)
 
   simulateds[[i]] <- simulated
@@ -87,22 +85,11 @@ for (i in 1:(length(phases) - 1)) {
 for (type in types) {
   min <- min(unlist(lapply(simulateds, function(s) min(s[, type]))))
   max <- max(unlist(lapply(simulateds, function(s) max(s[, type]))))
-  plot(allphases, rep(0, length(allphases)), main = type, xlab = "date", ylab = type, ylim = c(min, max), type = "n", cex = 0.5)
+  plot(alldates, rep(0, length(alldates)), main = typeNames[[type]], xlab = "Zeit", ylab = type, ylim = c(min, max), type = "n", cex = 0.5)
+  abline(v = phases[2:(length(phases)-1)])
 
   for (i in seq_len(length(simulateds))) {
     simulated <- simulateds[[i]]
-    color <- colors[i]
-    lines(simulated$date, simulated[, type], col = color)
-  }
-}
-
-plot(allphases, rep(0, length(allphases)), main = "all", xlab = "date", ylab = type, ylim = c(0, N), type = "n", cex = 0.5)
-
-for (t in 1:6) {
-  type <- types[t]
-  for (i in seq_len(length(simulateds))) {
-    simulated <- simulateds[[i]]
-    color <- colors[i]
-    lines(simulated$date, simulated[, type], col = color, lty = t)
+    lines(simulated$date, simulated[, type])
   }
 }

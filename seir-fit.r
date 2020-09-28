@@ -1,6 +1,5 @@
 library(deSolve)
 library(dplyr)
-library(RColorBrewer)
 
 data_path <- "data.csv"
 if (!file.exists(data_path)) {
@@ -46,7 +45,6 @@ seirsim <- function(input, S0, E0, I0, R0, beta, gamma, sigma) {
     times = seq_len(nrow(input)),
     y = c(S = S0, E = E0, I = I0, R = R0),
     parms = c(N = N, beta = beta, gamma = gamma, sigma = sigma, dtstep = 1),
-    method = "euler",
     func = function(t, y, parms) {
       with(as.list(c(y, parms)), {
         dS <- dtstep * (-beta * ((S * I) / N))
@@ -89,7 +87,6 @@ seiroptim <- function(input, S0, E0, I0, R0, gamma, sigma) {
   optimized$par
 }
 
-colors <- brewer.pal(9, name = "Set1")
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
@@ -134,10 +131,10 @@ for (i in 1:(length(phases) - 1)) {
 }
 
 max <- max(unlist(lapply(simulateds, function(s) max(s$I))))
-plot(allphases$date, allphases$I, xlab = "date", ylab = "infected", ylim = c(0, max), type = "b", cex = 0.5)
+plot(allphases$date, allphases$I, xlab = "Zeit", ylab = "I", ylim = c(0, max), type = "b", cex = 0.5)
+abline(v = phases[2:(length(phases)-1)])
 
 for (i in seq_len(length(simulateds))) {
   simulated <- simulateds[[i]]
-  color <- colors[i]
-  lines(simulated$date, simulated$I, col = color)
+  lines(simulated$date, simulated$I)
 }
