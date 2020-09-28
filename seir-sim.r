@@ -1,4 +1,6 @@
 library(deSolve)
+library(ggplot2)
+library(reshape2)
 
 seirsim <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out <- ode(
@@ -31,8 +33,6 @@ seirsimvisual <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out
 }
 
-types <- c("S", "E", "I", "R")
-typeNames <- c(S = "Susceptible", E = "Exposed", I = "Infectious", R = "Recovered")
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
@@ -62,34 +62,41 @@ S0 <- N - E0 - I0 - R0
 gamma <- 0.33
 sigma <- 0.19
 
-simulateds <- list()
+simulated <- NULL
 for (i in 1:(length(phases) - 1)) {
   from <- phases[i]
   to <- phases[i + 1]
   beta <- betas[i]
 
   date <- seq.Date(from, to, 1)
-  print(data.frame(i = i, S0 = S0, E0 = E0, I0 = I0, R0 = R0, beta = beta, gamma = gamma, sigma = sigma))
-  simulated <- seirsimvisual(date, S0, E0, I0, R0, beta, gamma, sigma)
-
-  simulateds[[i]] <- simulated
+  s <- seirsimvisual(date, S0, E0, I0, R0, beta, gamma, sigma)
+  simulated <- rbind(simulated, s)
 
   # Starting parameters for the next iteration equal the final values for the current simulated run,
   # since the next simulated phase should pick up where the current one left off.
-  R0 <- simulated[nrow(simulated), "R"]
-  I0 <- simulated[nrow(simulated), "I"]
-  E0 <- simulated[nrow(simulated), "E"]
+  R0 <- s[nrow(s), "R"]
+  I0 <- s[nrow(s), "I"]
+  E0 <- s[nrow(s), "E"]
   S0 <- N - E0 - I0 - R0
 }
 
-for (type in types) {
-  min <- min(unlist(lapply(simulateds, function(s) min(s[, type]))))
-  max <- max(unlist(lapply(simulateds, function(s) max(s[, type]))))
-  plot(alldates, rep(0, length(alldates)), main = typeNames[[type]], xlab = "Zeit", ylab = type, ylim = c(min, max), type = "n", cex = 0.5)
-  abline(v = phases[2:(length(phases)-1)])
+# My intention is to draw one plot per column within the "simulated" data frame.
+# This shows how: https://stackoverflow.com/q/18046051
+molten <- melt(simulated, id.vars = "date")
 
-  for (i in seq_len(length(simulateds))) {
-    simulated <- simulateds[[i]]
-    lines(simulated$date, simulated[, type])
-  }
-}
+vlineDates <- data.frame(date = phases[2:(length(phases) - 1)])
+vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "dotted")
+
+ggplot(data = molten, mapping = aes(x = date, y = value)) +
+  theme_minimal() +
+  labs(x = "Zeit", y = NULL) +
+  facet_wrap(vars(variable), scales = "free", switch = "y") +
+  geom_line() +
+  vlines
+
+ggplot(data = molten, mapping = aes(x = date, y = value, color = variable)) +
+  theme_minimal() +
+  scale_colour_brewer(palette = "Set1") +
+  labs(x = "Zeit", y = NULL, colour = NULL) +
+  geom_line() +
+  vlines

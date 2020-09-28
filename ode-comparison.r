@@ -1,10 +1,12 @@
 library(deSolve)
+library(ggplot2)
+library(reshape2)
 
 x <- seq(1, 10)
 
 euler <- ode(
   times = x,
-  y = c(Y = 1),
+  y = c(y = 1),
   parms = NULL,
   method = "euler",
   func = function(t, y, parms) {
@@ -14,12 +16,20 @@ euler <- ode(
 
 lsoda <- ode(
   times = x,
-  y = c(Y = 1),
+  y = c(y = 1),
   parms = NULL,
   func = function(t, y, parms) {
     list(2 * t)
   }
 )
 
-plot(x, euler[, "Y"], type = "b", main = "f(x) = x^2", ylab = "y", ylim = c(0, 100))
-lines(x, lsoda[, "Y"], type = "b", col = "orange")
+data <- data.frame(x = x, euler = euler[, "y"], lsoda = lsoda[, "y"])
+molten <- melt(data, id.vars = "x")
+
+ggplot(data = molten, mapping = aes(x = x, y = value, linetype = variable)) +
+  theme_minimal() +
+  labs(title = "f(x) = x^2", y = "y") +
+  scale_linetype() +
+  scale_x_continuous(breaks = x) +
+  geom_line() +
+  geom_point()

@@ -1,4 +1,5 @@
 library(deSolve)
+library(ggplot2)
 
 N <- 4000000
 R0 <- 0
@@ -15,7 +16,7 @@ seirgen <- function(dtstep) {
   # Since dtstep is the step length _after_ the first day we need to subtract 1 from t before dividing by dtstep.
   # E.g. 3 days with a step length of 0.5 result in 5 rows: 1.0, 1.5, 2.0, 2.5, 3.0.
   # Same logic applies for calculating "time" below.
-  rows <-  (steps - 1) / dtstep + 1
+  rows <- (steps - 1) / dtstep + 1
   out <- matrix(0, ncol = 5, nrow = rows)
   colnames(out) <- c("time", "S", "E", "I", "R")
 
@@ -43,9 +44,12 @@ seirgen <- function(dtstep) {
   out
 }
 
-out1 <- seirgen(1)
-out24 <- seirgen(1 / 24)
+out1d <- seirgen(1)
+out1h <- seirgen(1 / 24)
 
-plot(out1[, "time"], out1[, "I"], type = "l", xlab = "Zeit", ylab = "I")
-lines(out24[, "time"], out24[, "I"], col = "red")
-legend("topright", c("1d", "1h"), fill = c("black", "red"), title = "Zeitschrittlänge", horiz = TRUE)
+ggplot(mapping = aes(x = time, y = I)) +
+  theme_minimal() +
+  scale_linetype_manual(values = c("1d" = "dashed", "1h" = "solid")) +
+  labs(x = "Zeit", linetype = "Zeitschrittlänge") +
+  geom_line(data = as.data.frame(out1d), mapping = aes(linetype = "1d")) +
+  geom_line(data = as.data.frame(out1h), mapping = aes(linetype = "1h"))

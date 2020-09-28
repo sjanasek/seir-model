@@ -1,5 +1,6 @@
 library(deSolve)
 library(dplyr)
+library(ggplot2)
 
 data_path <- "data.csv"
 if (!file.exists(data_path)) {
@@ -108,7 +109,7 @@ S0 <- N - E0 - I0 - R0
 gamma <- 0.33
 sigma <- 0.19
 
-simulateds <- list()
+simulated <- NULL
 betas <- list()
 for (i in 1:(length(phases) - 1)) {
   from <- phases[i]
@@ -117,24 +118,26 @@ for (i in 1:(length(phases) - 1)) {
 
   input <- aggregated[aggregated$date >= from & aggregated$date <= to,]
   beta <- seiroptim(input, S0, E0, I0, R0, gamma, sigma)
-  simulated <- seirsimvisual(input, S0, E0, I0, R0, beta, gamma, sigma)
+  s <- seirsimvisual(input, S0, E0, I0, R0, beta, gamma, sigma)
 
-  simulateds[[i]] <- simulated
+  simulated <- rbind(simulated, s)
   betas[[i]] <- beta
 
   # Starting parameters for the next iteration equal the final values for the current simulated run,
   # since the next simulated phase should pick up where the current one left off.
-  R0 <- simulated[nrow(simulated), "R"]
-  I0 <- simulated[nrow(simulated), "I"]
-  E0 <- simulated[nrow(simulated), "E"]
+  R0 <- s[nrow(s), "R"]
+  I0 <- s[nrow(s), "I"]
+  E0 <- s[nrow(s), "E"]
   S0 <- N - E0 - I0 - R0
 }
 
-max <- max(unlist(lapply(simulateds, function(s) max(s$I))))
-plot(allphases$date, allphases$I, xlab = "Zeit", ylab = "I", ylim = c(0, max), type = "b", cex = 0.5)
-abline(v = phases[2:(length(phases)-1)])
+vlineDates <- data.frame(date = phases[2:(length(phases) - 1)])
+vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "dotted")
 
-for (i in seq_len(length(simulateds))) {
-  simulated <- simulateds[[i]]
-  lines(simulated$date, simulated$I)
-}
+ggplot(mapping = aes(x = date, y = I)) +
+  theme_minimal() +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  labs(x = "Zeit", linetype = NULL) +
+  geom_line(data = allphases, mapping = aes(linetype = "Ist"), color = "#777777") +
+  geom_line(data = simulated, mapping = aes(linetype = "Simuliert")) +
+  vlines
