@@ -2,13 +2,16 @@ library(deSolve)
 library(ggplot2)
 library(reshape2)
 
-seirsim <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
+seirsim <- function(date, S0, E0, I0, R0, betaf, gamma, sigma) {
+  times <- seq_len(length(date))
+  betaf <- betaf(times)
   out <- ode(
-    times = seq_len(length(date)),
+    times = times,
     y = c(S = S0, E = E0, I = I0, R = R0),
     parms = c(N = N, beta = beta, gamma = gamma, sigma = sigma, dtstep = 1),
     func = function(t, y, parms) {
       with(as.list(c(y, parms)), {
+        beta <- betaf(t)
         dS <- dtstep * (-beta * ((S * I) / N))
         dE <- dtstep * (beta * ((S * I) / N) - sigma * E)
         dI <- dtstep * (sigma * E - gamma * I)
@@ -33,6 +36,27 @@ seirsimvisual <- function(date, S0, E0, I0, R0, beta, gamma, sigma) {
   out
 }
 
+constant <- function(beta) {
+  function (times) {
+    function (t) {
+      beta
+    }
+  }
+}
+
+linear <- function(beta0, beta1) {
+  function (times) {
+    x0 <- min(times)
+    dx <- max(times) - x0
+    y0 <- beta0
+    dy <- beta1 - beta0
+    function (t) {
+      p <- (t - x0) / dx
+      p * dy + y0
+    }
+  }
+}
+
 phases <- c(
   as.Date("2020-03-02"),
   # no lockdown
@@ -45,12 +69,12 @@ phases <- c(
   as.Date("2020-10-30"),
   as.Date("2020-12-30")
 )
-betas <- c(
-  0.756664,
-  0.1775356,
-  0.476604,
-  0.1775356,
-  0.756664
+betafs <- c(
+  constant(0.756664),
+  constant(0.1775356),
+  constant(0.476604),
+  constant(0.1775356),
+  constant(0.756664)
 )
 
 alldates <- seq.Date(phases[1], phases[length(phases)], 1)
@@ -66,10 +90,10 @@ simulated <- NULL
 for (i in 1:(length(phases) - 1)) {
   from <- phases[i]
   to <- phases[i + 1]
-  beta <- betas[i]
+  betaf <- betafs[[i]]
 
   date <- seq.Date(from, to, 1)
-  s <- seirsimvisual(date, S0, E0, I0, R0, beta, gamma, sigma)
+  s <- seirsimvisual(date, S0, E0, I0, R0, betaf, gamma, sigma)
   simulated <- rbind(simulated, s)
 
   # Starting parameters for the next iteration equal the final values for the current simulated run,
