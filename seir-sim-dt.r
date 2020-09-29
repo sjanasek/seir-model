@@ -49,7 +49,7 @@ out1h <- seirgen(1 / 24)
 
 ggplot(mapping = aes(x = time, y = I)) +
   theme_minimal() +
-  scale_linetype_manual(values = c("1d" = "dashed", "1h" = "solid")) +
+  scale_linetype_manual(values = c("22", "solid")) +
   labs(x = "Zeit", linetype = "Zeitschrittlänge") +
   geom_line(data = as.data.frame(out1d), mapping = aes(linetype = "1d")) +
   geom_line(data = as.data.frame(out1h), mapping = aes(linetype = "1h"))

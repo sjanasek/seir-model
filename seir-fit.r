@@ -26,7 +26,7 @@ colnames(aggregated) <- c("date", "Idaily")
 aggregated$date <- as.Date(aggregated$date, "%Y/%m/%d")
 
 # The dataset is sparse and has missing dates. -> Insert missing dates and fill them with zero values.
-dates <- seq.Date(aggregated[1, "date"],  aggregated[nrow(aggregated), "date"], 1)
+dates <- seq.Date(aggregated[1, "date"], aggregated[nrow(aggregated), "date"], 1)
 aggregated <- full_join(data.frame(date = dates), aggregated)
 aggregated[is.na(aggregated)] <- as.integer(0)
 
@@ -132,12 +132,12 @@ for (i in 1:(length(phases) - 1)) {
 }
 
 vlineDates <- data.frame(date = phases[2:(length(phases) - 1)])
-vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "dotted")
+vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "12", size = 0.2)
 
 ggplot(mapping = aes(x = date, y = I)) +
   theme_minimal() +
-  scale_linetype_manual(values = c("dashed", "solid")) +
+  scale_linetype_manual(values = c("22", "solid")) +
   labs(x = "Zeit", linetype = NULL) +
-  geom_line(data = allphases, mapping = aes(linetype = "Ist"), color = "#777777") +
+  geom_line(data = allphases, mapping = aes(linetype = "Ist")) +
   geom_line(data = simulated, mapping = aes(linetype = "Simuliert")) +
   vlines

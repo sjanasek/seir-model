@@ -85,7 +85,7 @@ for (i in 1:(length(phases) - 1)) {
 molten <- melt(simulated, id.vars = "date")
 
 vlineDates <- data.frame(date = phases[2:(length(phases) - 1)])
-vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "dotted")
+vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linetype = "12", size = 0.2)
 
 ggplot(data = molten, mapping = aes(x = date, y = value)) +
   theme_minimal() +
