@@ -28,7 +28,7 @@ molten <- melt(data, id.vars = "x")
 
 ggplot(data = molten, mapping = aes(x = x, y = value, linetype = variable)) +
   theme_minimal() +
-  labs(title = "f(x) = x^2", y = "y") +
+  labs(title = "f(x) = x^2", y = "y", linetype = NULL) +
   scale_linetype_manual(values = c("22", "solid")) +
   scale_x_continuous(breaks = x) +
   geom_line() +

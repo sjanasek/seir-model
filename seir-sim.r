@@ -59,22 +59,18 @@ linear <- function(beta0, beta1) {
 
 phases <- c(
   as.Date("2020-03-02"),
-  # no lockdown
   as.Date("2020-04-30"),
-  # lockdown
   as.Date("2020-06-30"),
-  # no lockdown
   as.Date("2020-08-30"),
-  # summer vacation
   as.Date("2020-10-30"),
-  as.Date("2020-12-30")
+  as.Date("2020-12-31")
 )
 betafs <- c(
-  constant(0.756664),
-  constant(0.1775356),
-  constant(0.476604),
-  constant(0.1775356),
-  constant(0.756664)
+  linear(0.9,0.7),
+  linear(0.7,0.5),
+  linear(0.5,0.3),
+  linear(0.3,0.2),
+  linear(0.2,0.1)
 )
 
 alldates <- seq.Date(phases[1], phases[length(phases)], 1)

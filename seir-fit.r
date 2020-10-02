@@ -11,7 +11,7 @@ if (!file.exists(data_path)) {
 # In the following we're generating the "geilsten Daten Deutschlands". :)
 data <- read.csv(file = data_path, stringsAsFactors = FALSE)
 
-# Only observe Hamburg as rate of infection is fairly stable
+# Only observe Saxony as rate of infection is fairly stable
 data <- data[data$IdBundesland == 14,]
 
 # If any of the "Neu" columns are <0 they indicate revisioned (now invalid) entries.
@@ -136,8 +136,8 @@ vlines <- geom_vline(data = vlineDates, mapping = aes(xintercept = date), linety
 
 ggplot(mapping = aes(x = date, y = I)) +
   theme_minimal() +
-  scale_linetype_manual(values = c("22", "solid")) +
+  scale_linetype_manual(values = c(Soll = "22", Simuliert = "solid")) +
   labs(x = "Zeit", linetype = NULL) +
-  geom_line(data = allphases, mapping = aes(linetype = "Ist")) +
+  geom_line(data = allphases, mapping = aes(linetype = "Soll")) +
   geom_line(data = simulated, mapping = aes(linetype = "Simuliert")) +
   vlines

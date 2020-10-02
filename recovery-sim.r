@@ -25,7 +25,8 @@ view <- aggregated[(nrow(aggregated) - 60):nrow(aggregated),]
 
 ggplot(data = view, mapping = aes(x = date)) +
   theme_minimal() +
+  labs(x = "Zeit", y = "R") +
   scale_linetype_manual(values = c("22", "solid")) +
-  labs(x = "Zeit", y = "R", linetype = NULL) +
-  geom_line(mapping = aes(y = Rsum, linetype = "Ist")) +
-  geom_line(mapping = aes(y = R, linetype = "Simuliert"))
+  geom_line(mapping = aes(y = Isum, linetype = "22"), show.legend = FALSE) +
+  geom_line(mapping = aes(y = Rsum, linetype = "solid"), show.legend = FALSE) +
+  geom_line(mapping = aes(y = R, linetype = "solid", color = "red"), show.legend = FALSE)
